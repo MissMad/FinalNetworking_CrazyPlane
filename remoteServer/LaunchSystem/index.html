@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paper Plane Launcher</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="jquery"></script>
+  </head>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Vesper+Libre:wght@400;500;700;900&display=swap");
+
+    html {
+      box-sizing: border-box;
+      margin: 0;
+    }
+    *,
+    *:before,
+    *:after {
+      box-sizing: inherit;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #B6684B;
+    }
+
+    .visible {
+      display: inherit;
+    }
+
+    .invisible {
+      display: none;
+    }
+
+    /* .fade-in {
+      animation: fadeIn 0.2s forwards;
+    }
+
+    .fade-out {
+      animation: fadeOut 0.2s forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    } */
+
+    .logo-md {
+      width: 300px;
+      height: 137px;
+      display: block;
+    }
+
+    .logo-sm {
+      width: 200px;
+      height: 92px;
+      display: block;
+    }
+
+    #onboarding-page {
+      justify-content: center;
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      background-image: url(/backgrounds/onboarding_bg.png);
+      padding-top: 3rem;
+    }
+
+    #pseudo-page {
+      justify-content: center;
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      background-image: url(/backgrounds/pseudo_bg.png);
+      flex-direction: column;
+      align-items: center;
+      gap: 60px;
+    }
+
+    #rules-page {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      background-image: url(/backgrounds/rules_bg.png);
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    #game-page {
+      justify-content: top;
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      background-image: url(/backgrounds/game_bg.png);
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #quiz-page {
+      justify-content: top;
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      background-image: url(/backgrounds/quiz_bg.png);
+      flex-direction: column;
+      align-items: center;
+      padding-top: 2rem;
+      gap: 15%;
+    }
+
+    #pseudo-text {
+      width: 85px;
+      height: 30px;
+      padding-left: 5px;
+    }
+
+    #pseudo-input {
+      width: 293px;
+      height: 120px;
+    }
+
+    #join-btn {
+      width: 165px;
+      height: 71px;
+      display: flex;
+      position: relative;
+    }
+
+    .text-input {
+      display: flex;
+      position: relative;
+      flex-direction: column;
+      width: 70%;
+      /* top: 25rem; */
+    }
+
+    #game-page > .logo-sm {
+      position: relative;
+      top: 2rem;
+    }
+
+    #game-area {
+      text-align: center;
+    }
+
+    #touch-area {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: transparent;
+      touch-action: none; /* Prevent default touch actions */
+    }
+
+    #pseudo {
+      width: 100%;
+      height: 100px;
+      outline: none;
+      background: transparent;
+      background-image: url("assets/input.png") !important;
+      border: none;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      padding: 0 40px;
+      font-family: "Montserrat", sans-serif;
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-top: -10px;
+      color: #8399f5;
+    }
+
+    .rules {
+      width: 100%;
+    }
+
+    #quiz-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+  </style>
+
+  <body>
+    <section id="quiz-page" class="invisible">
+      <img
+        class="logo-sm"
+        src="/assets/logo.png"
+        alt="logo Crazy Paper Plane"
+      />
+      <div id="quiz-buttons">
+        <img id="true-button" src="assets/true_btn.png" alt="true button" />
+        <img id="false-button" src="assets/false_btn.png" alt="false button" />
+      </div>
+    </section>
+
+    <section id="game-page" class="visible">
+      <img
+        class="logo-sm"
+        src="/assets/logo.png"
+        alt="logo Crazy Paper Plane"
+      />
+      <div id="game-area">
+        <div id="touch-area"></div>
+      </div>
+    </section>
+
+    <section id="rules-page" class="visible">
+    </section>
+
+    <section id="pseudo-page" class="visible">
+      <img
+        class="logo-md"
+        src="/assets/logo.png"
+        alt="logo Crazy Paper Plane"
+      />
+      <div class="text-input">
+        <img id="pseudo-text" src="/assets/pseudo.png" alt="pseudo" />
+        <input type="text" id="pseudo" autocomplete="off" />
+      </div>
+      <img id="join-btn" src="assets/join_btn.png" alt="join button" />
+      <!-- <form id="spawn">
+          <input type="text" id="pseudo" /><br />
+          <input type="submit" value="Spawn" />
+        </form> -->
+    </section>
+
+    <section id="onboarding-page" class="visible active">
+      <img
+        class="logo-md"
+        src="/assets/logo.png"
+        alt="logo Crazy Paper Plane"
+      />
+    </section>
+  </body>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", (event) => {
+      const socket = io();
+      var user;
+
+        // const switchSection = (oldSectionId, newSectionId, delay) => {
+        //   document.getElementById(oldSectionId).classList.remove("visible");
+        //   document.getElementById(oldSectionId).classList.add("invisible");
+
+        //   setTimeout(() => {
+        //     document.getElementById(newSectionId).classList.remove("invisible");
+        //     document.getElementById(newSectionId).classList.add("visible");
+        //   }, delay);
+        // };
+
+    //   const switchSection = (oldSectionId, newSectionId) => {
+    //     document.getElementById(oldSectionId).classList.add("fade-out");
+    //     setTimeout(() => {
+    //       document.getElementById(oldSectionId).classList.remove("visible", "fade-out");
+    //       document.getElementById(oldSectionId).classList.add("invisible");
+
+    //       document.getElementById(newSectionId).classList.remove("invisible");
+    //       document.getElementById(newSectionId).classList.add("visible", "fade-in");
+    //       setTimeout(() => {
+    //         document.getElementById(newSectionId).classList.remove("fade-in");
+    //       }, 200);
+    //     }, 200);
+    //   };
+
+    const switchSection = (newSectionId) => {
+    const currentVisibleSection = document.querySelector('.active');
+
+    if (currentVisibleSection) {
+        setTimeout(() => {
+            currentVisibleSection.classList.remove("visible");
+            currentVisibleSection.classList.add("invisible");
+
+            const newSection = document.getElementById(newSectionId);
+            newSection.classList.remove("invisible");
+            newSection.classList.add("visible", "active");
+        }, 500);
+    }
+};
+
+
+      window.setTimeout(() => {
+        switchSection("pseudo-page", 10);
+      }, 3000);
+
+      $(function () {
+        var socket = io();
+
+        $("#join-btn").click(function () {
+          user = $("#pseudo").val();
+          console.log({ pseudo: user });
+          var msg = { pseudo: user };
+          socket.emit("spawn", msg);
+
+          switchSection("rules-page", 10);
+
+          window.setTimeout(() => {
+            switchSection("game-page", 10);
+          }, 10000);
+        });
+      });
+
+      const touchArea = document.getElementById("touch-area");
+      const trueButton = document.getElementById("true-button");
+      const falseButton = document.getElementById("false-button");
+
+      let startX, startY, endX, endY;
+      let startTime, endTime;
+
+      touchArea.addEventListener("touchstart", (e) => {
+        const touchStart = e.touches[0];
+        startX = touchStart.clientX;
+        startY = touchStart.clientY;
+        startTime = new Date().getTime();
+      });
+
+      touchArea.addEventListener("touchend", (e) => {
+        const touchEnd = e.changedTouches[0];
+        endX = touchEnd.clientX;
+        endY = touchEnd.clientY;
+        endTime = new Date().getTime();
+
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+
+        const directionVector = {
+          x: parseInt(deltaX),
+          y: parseInt(deltaY),
+        };
+
+        console.log("Direction Vector:", directionVector);
+
+        const Y = 10;
+        const Z = directionVector.y * -1;
+
+        const duration = endTime - startTime;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const speed = distance / duration;
+        const roundedSpeed = parseFloat(speed.toFixed(2)); // Arrondir aux centièmes
+
+        const vectorString = `${user}#${directionVector.x}#${Y}#${Z}#${roundedSpeed}`;
+
+        console.log("Direction Vector String:", vectorString);
+
+        socket.emit("swipe", vectorString);
+      });
+
+      // Écouteurs d'événements pour les boutons de quiz
+      trueButton.addEventListener("click", () => {
+        const quizString = `${user}#vrai`;
+        console.log("Vrai button clicked, Quiz String:", quizString);
+        socket.emit("quiz", quizString);
+      });
+
+      falseButton.addEventListener("click", () => {
+        const quizString = `${user}#faux`;
+        console.log("Faux button clicked, Quiz String:", quizString);
+        socket.emit("quiz", quizString);
+      });
+
+      // Gestion des états de jeu reçus depuis Unity
+      socket.on('gameState', function (states) {
+            console.log('Received game state:', states);
+
+            if (states.GamePlay) {
+                switchSection("game-page");
+            } else if (states.Setup) {
+                switchSection("rules-page");
+            } else if (states.GameQuiz) {
+                switchSection("quiz-page");
+            }
+        });
+    });
+  </script>
+</html>
